@@ -1,0 +1,108 @@
+# Description: Added Amazon RDS MySQL database resource to the VPC template
+# Revision: 2
+# Date: October 3, 2026
+
+AWSTemplateFormatVersion: "2010-09-09"
+
+# Description of the CloudFormation stack
+Description: >
+  AWS CloudFormation template that creates a VPC named VPC-fatkan5120
+  with three subnets distributed across three Availability Zones.
+  The template also includes an Amazon RDS MySQL database instance.
+  This template is intended for deployment in the US-West-2 (Oregon)
+  Region.
+
+# Resources created by this CloudFormation template
+Resources:
+
+  # Main VPC
+  # CIDR block 10.0.0.0/16 provides private IPv4 addressing for the VPC.
+  FatkanVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+      # Name tag required for the VPC
+      Tags:
+        - Key: Name
+          Value: VPC-fatkan5120
+
+  # Subnet 1
+  # Uses the first Availability Zone available in US-West-2.
+  # CIDR 10.0.1.0/24 does not overlap with the other subnets.
+  SubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref FatkanVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+      Tags:
+        - Key: Name
+          Value: VPC-fatkan5120-Subnet-AZ1
+
+  # Subnet 2
+  # Uses the second Availability Zone available in US-West-2.
+  # CIDR 10.0.2.0/24 does not overlap with the other subnets.
+  SubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref FatkanVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ""
+      Tags:
+        - Key: Name
+          Value: VPC-fatkan5120-Subnet-AZ2
+
+  # Subnet 3
+  # Uses the third Availability Zone available in US-West-2.
+  # CIDR 10.0.3.0/24 does not overlap with the other subnets.
+  SubnetAZ3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref FatkanVPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs ""
+      Tags:
+        - Key: Name
+          Value: VPC-fatkan5120-Subnet-AZ3
+
+  # Amazon RDS MySQL database instance
+  # Added from the rds-starter.yml template.
+  RdsInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      VPCSecurityGroups:
+        - <SECURITY-GROUP-ID>
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: playground-db
+      Engine: MySQL
+      MasterUsername: Admin
+      MasterUserPassword: CloudAcademy123!
+
+# Outputs return the IDs of the VPC and three subnets.
+Outputs:
+
+  VPCId:
+    Description: ID of the VPC named VPC-fatkan5120
+    Value: !Ref FatkanVPC
+
+  SubnetAZ1Id:
+    Description: ID of the subnet in the first Availability Zone
+    Value: !Ref SubnetAZ1
+
+  SubnetAZ2Id:
+    Description: ID of the subnet in the second Availability Zone
+    Value: !Ref SubnetAZ2
+
+  SubnetAZ3Id:
+    Description: ID of the subnet in the third Availability Zone
+    Value: !Ref SubnetAZ3
